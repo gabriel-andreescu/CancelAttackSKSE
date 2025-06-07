@@ -11,7 +11,7 @@ public:
 
         const auto* rightHand = player->GetEquippedObject(false);
         const auto* rightWeapon = rightHand ? rightHand->As<RE::TESObjectWEAP>() : nullptr;
-        if (rightWeapon && (rightWeapon->IsBow() || rightWeapon->IsCrossbow() || rightWeapon->IsHandToHandMelee())) {
+        if (!rightWeapon || !rightWeapon->IsMelee() || rightWeapon->IsHandToHandMelee()) {
             return RE::BSEventNotifyControl::kContinue;
         }
 
