@@ -12,5 +12,8 @@
       <file path="$PROJECT_DIR$/extern" />
       <file path="$PROJECT_DIR$/include" />
     </libraryRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/build" />
+    </excludeRoots>
   </component>
 </project>
