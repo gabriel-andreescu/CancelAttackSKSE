@@ -1,6 +1,12 @@
 #include "CancelAttackHandler.h"
 #include "Config.h"
 
+CancelAttackHandler* CancelAttackHandler::GetSingleton()
+{
+    static CancelAttackHandler instance;
+    return &instance;
+}
+
 RE::BSEventNotifyControl CancelAttackHandler::ProcessEvent(
     RE::InputEvent* const* a_event,
     RE::BSTEventSource<RE::InputEvent*>*)
@@ -10,14 +16,8 @@ RE::BSEventNotifyControl CancelAttackHandler::ProcessEvent(
         return RE::BSEventNotifyControl::kContinue;
     }
 
-    bool isAttacking = player->IsAttacking();
-
-    if (isAttacking && !wasAttacking) {
-        lastAttackStartTime = std::chrono::steady_clock::now();
-    }
-    wasAttacking = isAttacking;
-
-    if (!isAttacking) {
+    UpdateAttackState(player);
+    if (!player->IsAttacking()) {
         return RE::BSEventNotifyControl::kContinue;
     }
 
@@ -27,28 +27,21 @@ RE::BSEventNotifyControl CancelAttackHandler::ProcessEvent(
         return RE::BSEventNotifyControl::kContinue;
     }
 
+    if (!blockMapped) {
+        UpdateBlockMappings();
+    }
+
     for (auto input = *a_event; input; input = input->next) {
-        if (input->eventType != RE::INPUT_EVENT_TYPE::kButton)
-            continue;
-
         auto* button = input->AsButtonEvent();
-        if (!button || !button->IsPressed() || button->HeldDuration() > 0.0f)
+        if (!button || !button->IsPressed() || button->HeldDuration() > 0.0f) {
             continue;
-
-        const auto key = button->GetIDCode();
-        const auto device = button->GetDevice();
-
-        const bool isBlockInput =
-            (device == RE::INPUT_DEVICE::kMouse && key == 0x01) || (device == RE::INPUT_DEVICE::kGamepad && key == 0x0F);
-
-        if (!isBlockInput)
-            continue;
-
-        if (IsRestrictedCancelWindow(player)) {
-            return RE::BSEventNotifyControl::kContinue;
         }
 
-        if (!TryConsumeStamina(player)) {
+        if (!IsBlockInputKey(button->GetDevice(), button->GetIDCode())) {
+            continue;
+        }
+
+        if (IsRestrictedCancelWindow(player) || !TryConsumeStamina(player)) {
             return RE::BSEventNotifyControl::kContinue;
         }
 
@@ -58,6 +51,41 @@ RE::BSEventNotifyControl CancelAttackHandler::ProcessEvent(
     return RE::BSEventNotifyControl::kContinue;
 }
 
+void CancelAttackHandler::UpdateAttackState(const RE::PlayerCharacter* player)
+{
+    const bool isAttacking = player->IsAttacking();
+    if (isAttacking && !wasAttacking) {
+        lastAttackStartTime = std::chrono::steady_clock::now();
+    }
+    wasAttacking = isAttacking;
+}
+
+void CancelAttackHandler::UpdateBlockMappings()
+{
+    auto* controlMap = RE::ControlMap::GetSingleton();
+    const auto* userEvents = RE::UserEvents::GetSingleton();
+
+    blockMappingKeyboard = controlMap->GetMappedKey(userEvents->leftAttack, RE::INPUT_DEVICE::kKeyboard);
+    blockMappingMouse = controlMap->GetMappedKey(userEvents->leftAttack, RE::INPUT_DEVICE::kMouse);
+    blockMappingGamepad = controlMap->GetMappedKey(userEvents->leftAttack, RE::INPUT_DEVICE::kGamepad);
+
+    blockMapped = true;
+}
+
+bool CancelAttackHandler::IsBlockInputKey(const RE::INPUT_DEVICE device, const std::uint32_t key) const
+{
+    switch (device) {
+        case RE::INPUT_DEVICE::kKeyboard:
+            return key == blockMappingKeyboard;
+        case RE::INPUT_DEVICE::kMouse:
+            return key == blockMappingMouse;
+        case RE::INPUT_DEVICE::kGamepad:
+            return key == blockMappingGamepad;
+        default:
+            return false;
+    }
+}
+
 bool CancelAttackHandler::HasTwoHandedWeaponEquipped(const RE::PlayerCharacter* player)
 {
     const auto* rightHand = player->GetEquippedObject(false);
@@ -65,7 +93,7 @@ bool CancelAttackHandler::HasTwoHandedWeaponEquipped(const RE::PlayerCharacter* 
     return rightWeapon && (rightWeapon->IsTwoHandedAxe() || rightWeapon->IsTwoHandedSword());
 }
 
-bool CancelAttackHandler::IsRestrictedCancelWindow(const RE::PlayerCharacter* player)
+bool CancelAttackHandler::IsRestrictedCancelWindow(const RE::PlayerCharacter* player) const
 {
     if (!Config::restrictCancelWindow || (Config::cancelWindow1H <= 0 && Config::cancelWindow2H <= 0)) {
         return false;
@@ -75,14 +103,8 @@ bool CancelAttackHandler::IsRestrictedCancelWindow(const RE::PlayerCharacter* pl
         return true;
     }
 
-    int cancelWindowMs = Config::cancelWindow1H;
-
-    if (HasTwoHandedWeaponEquipped(player)) {
-        cancelWindowMs = Config::cancelWindow2H;
-    }
-
-    auto now = std::chrono::steady_clock::now();
-    return now - lastAttackStartTime > std::chrono::milliseconds(cancelWindowMs);
+    int cancelWindowMs = HasTwoHandedWeaponEquipped(player) ? Config::cancelWindow2H : Config::cancelWindow1H;
+    return std::chrono::steady_clock::now() - lastAttackStartTime > std::chrono::milliseconds(cancelWindowMs);
 }
 
 void CancelAttackHandler::CancelAttack(RE::PlayerCharacter* player)
@@ -99,27 +121,18 @@ void CancelAttackHandler::CancelAttack(RE::PlayerCharacter* player)
 
 float CancelAttackHandler::GetStaminaCost(const RE::PlayerCharacter* player)
 {
-    if (Config::staminaCost1H <= 0.0f && Config::staminaCost2H <= 0.0f) {
-        return 0.0f;
-    }
-
-    if (HasTwoHandedWeaponEquipped(player)) {
-        return Config::staminaCost2H;
-    }
-
-    return Config::staminaCost1H;
+    return HasTwoHandedWeaponEquipped(player) ? Config::staminaCost2H : Config::staminaCost1H;
 }
 
 bool CancelAttackHandler::TryConsumeStamina(RE::PlayerCharacter* player)
 {
-    float staminaCost = GetStaminaCost(player);
-    if (staminaCost <= 0.0f) {
+    const float cost = GetStaminaCost(player);
+    if (cost <= 0.0f) {
         return true;
     }
 
-    float currentStamina = player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina);
-    if (currentStamina >= staminaCost) {
-        player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage, RE::ActorValue::kStamina, -staminaCost);
+    if (player->AsActorValueOwner()->GetActorValue(RE::ActorValue::kStamina) >= cost) {
+        player->AsActorValueOwner()->RestoreActorValue(RE::ACTOR_VALUE_MODIFIER::kDamage, RE::ActorValue::kStamina, -cost);
         return true;
     }
 

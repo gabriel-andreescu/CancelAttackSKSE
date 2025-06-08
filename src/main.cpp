@@ -1,17 +1,40 @@
 #include "CancelAttackHandler.h"
 #include "Config.h"
 
-static CancelAttackHandler g_cancelHandler;
+class MenuWatcher final : public RE::BSTEventSink<RE::MenuOpenCloseEvent>
+{
+public:
+    RE::BSEventNotifyControl ProcessEvent(
+        const RE::MenuOpenCloseEvent* a_event,
+        RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
+    {
+        if (!a_event || a_event->menuName.empty())
+            return RE::BSEventNotifyControl::kContinue;
+
+        if (a_event->menuName == RE::InterfaceStrings::GetSingleton()->journalMenu && !a_event->opening) {
+            CancelAttackHandler::GetSingleton()->UpdateBlockMappings();
+        }
+
+        return RE::BSEventNotifyControl::kContinue;
+    }
+};
+
+static MenuWatcher g_menuWatcher;
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
     if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
         if (auto* inputEventSource = RE::BSInputDeviceManager::GetSingleton()) {
-            inputEventSource->AddEventSink(&g_cancelHandler);
-            logger::info("CancelAttackHandler registered");
+            inputEventSource->AddEventSink(CancelAttackHandler::GetSingleton());
         } else {
-            logger::warn("Failed to register CancelAttackHandler - no input source");
+            logger::warn("Failed to register CancelAttackHandler");
+        }
+
+        if (auto ui = RE::UI::GetSingleton()) {
+            ui->AddEventSink(&g_menuWatcher);
+        } else {
+            logger::warn("Failed to register MenuWatcher");
         }
     }
 }
