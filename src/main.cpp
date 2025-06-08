@@ -1,44 +1,5 @@
-class CancelAttackHandler final : public RE::BSTEventSink<RE::InputEvent*>
-{
-public:
-    RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event,
-        RE::BSTEventSource<RE::InputEvent*>*) override
-    {
-        auto* player = RE::PlayerCharacter::GetSingleton();
-        if (!player || !player->IsAttacking() || !a_event || !*a_event) {
-            return RE::BSEventNotifyControl::kContinue;
-        }
-
-        const auto* rightHand = player->GetEquippedObject(false);
-        const auto* rightWeapon = rightHand ? rightHand->As<RE::TESObjectWEAP>() : nullptr;
-        if (!rightWeapon || !rightWeapon->IsMelee() || rightWeapon->IsHandToHandMelee()) {
-            return RE::BSEventNotifyControl::kContinue;
-        }
-
-        for (auto input = *a_event; input; input = input->next) {
-            if (input->eventType != RE::INPUT_EVENT_TYPE::kButton)
-                continue;
-
-            auto* button = input->AsButtonEvent();
-            if (!button || !button->IsPressed() || button->HeldDuration() > 0.0f)
-                continue;
-
-            const auto key = button->GetIDCode();
-            const auto device = button->GetDevice();
-
-            if ((device == RE::INPUT_DEVICE::kMouse && key == 0x01) || (device == RE::INPUT_DEVICE::kGamepad && key == 0x0F)) {
-                player->NotifyAnimationGraph("attackStop");
-
-                const auto* left = player->GetEquippedObject(true);
-                if (const auto* armor = left ? left->As<RE::TESObjectARMO>() : nullptr; armor && armor->IsShield()) {
-                    player->NotifyAnimationGraph("blockStart");
-                }
-            }
-        }
-
-        return RE::BSEventNotifyControl::kContinue;
-    }
-};
+#include "CancelAttackHandler.h"
+#include "Config.h"
 
 static CancelAttackHandler g_cancelHandler;
 
@@ -98,6 +59,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
     logger::info("Game version : {}", a_skse->RuntimeVersion().string());
 
     Init(a_skse);
+    Config::Load();
     SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
     return true;
 }
