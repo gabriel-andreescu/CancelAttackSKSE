@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "secondthoughts",
+  "name": "cancelattackskse",
   "license": "GPL-3.0",
   "features": {
     "commonlibsse-ng": {
