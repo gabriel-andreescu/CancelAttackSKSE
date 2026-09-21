@@ -1,0 +1,12 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    bmk = {
+        repo = {
+            commit = "5aed0c4df0e6b1a08a4308749138a4a981cfef07",
+            url = "https://github.com/gabriel-andreescu/BethesdaModKit.git"
+        },
+        version = "0.3.1"
+    }
+}

@@ -1,0 +1,70 @@
+[size=4][color=#00ffff]OVERVIEW[/color][/size]
+Cancel a melee attack and go straight into a block, or cancel without blocking.
+
+
+[size=4][color=#00ffff]CONTROLS[/color][/size]
+By default, press your Block control during a melee attack to cancel it and start blocking. Hold it to keep blocking and release it to lower your guard.
+
+When dual wielding, fighting unarmed, or holding a spell in your left hand, use Ready Weapon or a custom key. You can set this as your [b]Additional cancel binding[/b] and keep Block as your main binding. The normal left-hand control remains available for attacking or casting. Blocking still requires equipment that can block normally.
+
+If you select Ready Weapon as your cancel binding, it won't sheathe your weapon during an attack, even if you don't have enough stamina or the attack is outside your cancel window. It sheathes and draws normally outside attacks.
+
+
+[size=4][color=#00ffff]CONFIGURATION[/color][/size]
+Edit the INI created on first launch:
+
+[quote]Data\MCM\Settings\CancelAttackSKSE.ini[/quote]
+
+Or install the optional MCM addon to change settings in-game. On its [b]General[/b] page:
+
+[list]
+[*][b]Cancel binding[/b]: use Block, Ready Weapon, or a custom key. Block and Ready Weapon follow your game's control bindings.[/*]
+[*][b]Additional cancel binding[/b]: use a second control alongside your main binding.[/*]
+[*][b]After cancellation[/b]: choose [b]Cancel and block[/b] to raise your guard after cancelling, or [b]Cancel only[/b] to stop the attack without automatically blocking. For cancel-only behavior, use Ready Weapon or a custom key, since the game's Block control still blocks normally.[/*]
+[/list]
+
+You can also:
+
+[list]
+[*]Enable or disable cancellation for individual weapon types, dual wielding, and unarmed attacks.[/*]
+[*]Set how early and how late in an attack you can cancel.[/*]
+[*]Set stamina costs for one-handed, two-handed, and unarmed attacks.[/*]
+[/list]
+
+By default, cancellation is free and has no timing restriction. Bows, crossbows, and spell or staff casting are not supported.
+
+
+[size=4][color=#00ffff]UPDATING TO 2.0.0[/color][/size]
+Replace the old version and reconfigure your settings. The old [b]Data\SKSE\Plugins\CancelAttackSKSE.ini[/b] is no longer used.
+
+
+[size=4][color=#00ffff]COMPATIBILITY[/color][/size]
+Keep One Click Power Attack's power-attack key separate from your cancel bindings.
+
+Use the game's Block control for timed blocking with [url=https://www.nexusmods.com/skyrimspecialedition/mods/64741]Valhalla Combat[/url].
+
+
+[size=4][color=#00ffff]REQUIREMENTS[/color][/size]
+Install the main archive with your mod manager and use [url=https://skse.silverlock.org/]SKSE[/url] for your Skyrim version.
+
+SE/AE
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/32444]Address Library for SKSE Plugins[/url]
+
+VR
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/58101]VR Address Library for SKSEVR[/url]
+
+Optional MCM addon
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/12604]SkyUI[/url] or [url=https://www.nexusmods.com/skyrimspecialedition/mods/91535]SkyUI - VR[/url]
+[url=https://www.nexusmods.com/skyrimspecialedition/mods/53000]MCM Helper[/url]
+
+
+[size=4][color=#00ffff]SOURCE[/color][/size]
+[url=https://github.com/gabriel-andreescu/CancelAttackSKSE]github.com/gabriel-andreescu/CancelAttackSKSE[/url]
+
+
+[size=4][color=#00ffff]CREDITS[/color][/size]
+[list]
+[*][url=https://github.com/alandtse/CommonLibSSE-NG]CommonLibSSE-NG[/url][/*]
+[*][url=https://github.com/powerof3/CLibUtil]CLibUtil[/url][/*]
+[*][url=https://www.nexusmods.com/skyrimspecialedition/mods/53000]MCM Helper[/url] - for the MCM addon[/*]
+[/list]

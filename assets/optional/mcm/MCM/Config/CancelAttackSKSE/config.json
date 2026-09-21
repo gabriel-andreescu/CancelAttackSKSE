@@ -1,0 +1,244 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Exit-9B/MCM-Helper/main/docs/config.schema.json",
+  "modName": "CancelAttackSKSE",
+  "displayName": "Cancel Attack",
+  "minMcmVersion": 13,
+  "pages": [
+    {
+      "pageDisplayName": "General",
+      "content": [
+        {
+          "type": "hiddenToggle",
+          "groupControl": 1,
+          "valueOptions": {
+            "sourceType": "PropertyValueBool",
+            "propertyName": "bCustomBindingSelected"
+          }
+        },
+        {
+          "type": "hiddenToggle",
+          "groupControl": 2,
+          "valueOptions": {
+            "sourceType": "PropertyValueBool",
+            "propertyName": "bAdditionalCustomBindingSelected"
+          }
+        },
+        {
+          "id": "iBinding:General",
+          "text": "Cancel binding",
+          "type": "enum",
+          "help": "Choose Block, Ready Weapon, or a custom key. Block preserves left-hand attacks and casting when the off hand is in use.",
+          "valueOptions": {
+            "sourceType": "ModSettingInt",
+            "defaultValue": 0,
+            "options": ["Block", "Ready Weapon", "Custom key"]
+          }
+        },
+        {
+          "id": "iCustomKey:General",
+          "text": "Custom cancel key",
+          "type": "keymap",
+          "help": "Used when Cancel binding is Custom key.",
+          "groupCondition": 1,
+          "valueOptions": {
+            "sourceType": "ModSettingInt",
+            "defaultValue": -1
+          }
+        },
+        {
+          "id": "iAdditionalBinding:General",
+          "text": "Additional cancel binding",
+          "type": "enum",
+          "help": "Optional second way to cancel. It uses the same timing, stamina, weapon, and post-cancellation settings as Cancel binding.",
+          "valueOptions": {
+            "sourceType": "ModSettingInt",
+            "defaultValue": 0,
+            "options": ["Disabled", "Block", "Ready Weapon", "Custom key"]
+          }
+        },
+        {
+          "id": "iAdditionalCustomKey:General",
+          "text": "Additional custom key",
+          "type": "keymap",
+          "help": "Used when Additional cancel binding is Custom key.",
+          "groupCondition": 2,
+          "valueOptions": {
+            "sourceType": "ModSettingInt",
+            "defaultValue": -1
+          }
+        },
+        {
+          "id": "iBehavior:General",
+          "text": "After cancellation",
+          "type": "enum",
+          "help": "Raise your guard after cancelling, or cancel without automatically blocking. Unarmed attacks cancel without blocking. The game's Block control still blocks normally.",
+          "valueOptions": {
+            "sourceType": "ModSettingInt",
+            "defaultValue": 0,
+            "options": ["Cancel and block", "Cancel only"]
+          }
+        },
+        {
+          "id": "bDebugLogging:General",
+          "text": "Debug logging",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": false
+          }
+        }
+      ]
+    },
+    {
+      "pageDisplayName": "Timing and Stamina",
+      "content": [
+        {
+          "id": "fWindowStart:Timing",
+          "text": "Cancel window start",
+          "type": "slider",
+          "help": "Earliest time after the attack starts that it can be cancelled.",
+          "valueOptions": {
+            "sourceType": "ModSettingFloat",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 3.0,
+            "step": 0.05,
+            "formatString": "{2} s"
+          }
+        },
+        {
+          "id": "fWindowEnd:Timing",
+          "text": "Cancel window end",
+          "type": "slider",
+          "help": "Latest cancellation time. Zero leaves the end unrestricted.",
+          "valueOptions": {
+            "sourceType": "ModSettingFloat",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 3.0,
+            "step": 0.05,
+            "formatString": "{2} s"
+          }
+        },
+        {
+          "id": "fOneHandedCost:Stamina",
+          "text": "One-handed stamina cost",
+          "type": "slider",
+          "valueOptions": {
+            "sourceType": "ModSettingFloat",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 500.0,
+            "step": 1.0,
+            "formatString": "{0}"
+          }
+        },
+        {
+          "id": "fTwoHandedCost:Stamina",
+          "text": "Two-handed stamina cost",
+          "type": "slider",
+          "valueOptions": {
+            "sourceType": "ModSettingFloat",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 500.0,
+            "step": 1.0,
+            "formatString": "{0}"
+          }
+        },
+        {
+          "id": "fUnarmedCost:Stamina",
+          "text": "Unarmed stamina cost",
+          "type": "slider",
+          "valueOptions": {
+            "sourceType": "ModSettingFloat",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 500.0,
+            "step": 1.0,
+            "formatString": "{0}"
+          }
+        }
+      ]
+    },
+    {
+      "pageDisplayName": "Weapons",
+      "content": [
+        {
+          "id": "bDaggers:Weapons",
+          "text": "Daggers",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bSwords:Weapons",
+          "text": "Swords",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bWarAxes:Weapons",
+          "text": "War axes",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bMaces:Weapons",
+          "text": "Maces",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bGreatswords:Weapons",
+          "text": "Greatswords",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bBattleaxesAndWarhammers:Weapons",
+          "text": "Battleaxes and warhammers",
+          "type": "toggle",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bDualWield:Weapons",
+          "text": "Dual wield",
+          "type": "toggle",
+          "help": "Allow cancellation while both hands hold one-handed weapons. Use Ready Weapon or a custom key so the ordinary left-hand attack remains available.",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        },
+        {
+          "id": "bUnarmed:Weapons",
+          "text": "Unarmed",
+          "type": "toggle",
+          "help": "Allow unarmed attack cancellation. Requires Ready Weapon or a custom key.",
+          "valueOptions": {
+            "sourceType": "ModSettingBool",
+            "defaultValue": true
+          }
+        }
+      ]
+    }
+  ]
+}
