@@ -151,10 +151,8 @@ enum class WeaponClass : std::uint8_t {
         case RE::INPUT_DEVICE::kGamepad: macro = SKSE::InputMap::GamepadMaskToKeycode(a_button.GetIDCode()); break;
         default:
             if (!REL::Module::IsVR()
-                || a_button.GetDevice()
-                < RE::INPUT_DEVICE::kVivePrimary
-                || a_button.GetDevice()
-                > RE::INPUT_DEVICE::kWMRSecondary) {
+                || a_button.GetDevice() < RE::INPUT_DEVICE::kVivePrimary
+                || a_button.GetDevice() > RE::INPUT_DEVICE::kWMRSecondary) {
                 return false;
             }
             macro = a_button.GetIDCode();
@@ -232,19 +230,19 @@ void Combat::RegisterInput() {
         SKSE::log::critical("Combat input registration failed");
         return;
     }
-    if (!self->inputRegistered_) {
+    if (!self->_inputRegistered) {
         input->PrependEventSink(static_cast<RE::BSInputDeviceManager::Sink*>(self));
-        self->inputRegistered_ = true;
+        self->_inputRegistered = true;
         SKSE::log::info("Combat input registered");
     }
 }
 
 void Combat::RegisterLifecycleEvents() {
     auto* self = GetSingleton();
-    if (!self->menuEventsRegistered_) {
+    if (!self->_menuEventsRegistered) {
         if (auto* userInterface = RE::UI::GetSingleton(); userInterface != nullptr) {
             userInterface->AddEventSink<RE::MenuOpenCloseEvent>(self);
-            self->menuEventsRegistered_ = true;
+            self->_menuEventsRegistered = true;
             SKSE::log::info("Combat lifecycle events registered");
         }
     }
@@ -274,8 +272,7 @@ bool Combat::ShouldSuppressReadyWeapon(const RE::InputEvent* a_event) {
         return false;
     }
     const auto* button = a_event->AsButtonEvent();
-    const auto isReadyEvent = a_event->QUserEvent()
-                              == userEvents->readyWeapon
+    const auto isReadyEvent = a_event->QUserEvent() == userEvents->readyWeapon
                               && ((settings.binding == Settings::Binding::kReadyWeapon)
                                   || (settings.additionalBinding == Settings::AdditionalBinding::kReadyWeapon)
                                   || (button != nullptr && MatchesAnyBinding(*button, settings)));
@@ -295,49 +292,49 @@ void Combat::Update(RE::PlayerCharacter& a_player, const float a_delta) {
         return;
     }
 
-    if ((ownsBlock_ || acceptedBlockPending_)) {
+    if ((_ownsBlock || _acceptedBlockPending)) {
         const auto* rightForm = a_player.GetEquippedObject(false);
         const auto* leftForm = a_player.GetEquippedObject(true);
         const auto* rightWeapon = rightForm != nullptr ? rightForm->As<RE::TESObjectWEAP>() : nullptr;
         if (!SupportsVanillaBlock(rightWeapon, leftForm)) {
-            acceptedBlockPending_ = false;
-            heldBlockKey_.reset();
+            _acceptedBlockPending = false;
+            _heldBlockKey.reset();
             EndOwnedBlock(a_player);
         }
     }
 
-    if (state == RE::ATTACK_STATE_ENUM::kDraw && lastAttackState_ != RE::ATTACK_STATE_ENUM::kDraw) {
-        attackElapsed_ = 0.0F;
-        timingActive_ = true;
+    if (state == RE::ATTACK_STATE_ENUM::kDraw && _lastAttackState != RE::ATTACK_STATE_ENUM::kDraw) {
+        _attackElapsed = 0.0F;
+        _timingActive = true;
     } else if (IsActiveMeleeAttack(state)) {
-        if (timingActive_) {
-            attackElapsed_ += std::max(a_delta, 0.0F);
+        if (_timingActive) {
+            _attackElapsed += std::max(a_delta, 0.0F);
         }
     } else {
-        attackElapsed_ = 0.0F;
-        timingActive_ = false;
+        _attackElapsed = 0.0F;
+        _timingActive = false;
     }
 
-    if (acceptedBlockPending_ && heldBlockKey_ && !IsActiveMeleeAttack(state)) {
+    if (_acceptedBlockPending && _heldBlockKey && !IsActiveMeleeAttack(state)) {
         BeginBlock(a_player);
     }
 
-    if (state != lastAttackState_) {
+    if (state != _lastAttackState) {
         SKSE::log::debug(
             "Attack state {} -> {} at {:.3f}s",
-            std::to_underlying(lastAttackState_),
+            std::to_underlying(_lastAttackState),
             std::to_underlying(state),
-            attackElapsed_
+            _attackElapsed
         );
     }
-    lastAttackState_ = state;
+    _lastAttackState = state;
 }
 
 void Combat::Reset(const bool a_stopOwnedBlock) {
     ResetBlockState(a_stopOwnedBlock);
-    attackElapsed_ = 0.0F;
-    lastAttackState_ = RE::ATTACK_STATE_ENUM::kNone;
-    timingActive_ = false;
+    _attackElapsed = 0.0F;
+    _lastAttackState = RE::ATTACK_STATE_ENUM::kNone;
+    _timingActive = false;
 }
 
 void Combat::ReconcileSettings() {
@@ -349,11 +346,11 @@ void Combat::ResetBlockState(const bool a_stopOwnedBlock) {
     if (a_stopOwnedBlock && player != nullptr) {
         EndOwnedBlock(*player);
     }
-    heldBlockKey_.reset();
-    ownedBlockKey_.reset();
-    vanillaBlockKey_.reset();
-    acceptedBlockPending_ = false;
-    ownsBlock_ = false;
+    _heldBlockKey.reset();
+    _ownedBlockKey.reset();
+    _vanillaBlockKey.reset();
+    _acceptedBlockPending = false;
+    _ownsBlock = false;
 }
 
 RE::BSEventNotifyControl Combat::ProcessEvent(
@@ -391,22 +388,22 @@ void Combat::HandleButton(RE::ButtonEvent& a_button, RE::PlayerCharacter& a_play
 
     if (IsMappedBlock(a_button)) {
         if (a_button.IsDown()) {
-            vanillaBlockKey_ = key;
-        } else if (a_button.IsUp() && vanillaBlockKey_ && key == *vanillaBlockKey_) {
-            vanillaBlockKey_.reset();
+            _vanillaBlockKey = key;
+        } else if (a_button.IsUp() && _vanillaBlockKey && key == *_vanillaBlockKey) {
+            _vanillaBlockKey.reset();
         }
     }
 
-    if (a_button.IsUp() && heldBlockKey_ && key == *heldBlockKey_) {
-        heldBlockKey_.reset();
-        acceptedBlockPending_ = false;
+    if (a_button.IsUp() && _heldBlockKey && key == *_heldBlockKey) {
+        _heldBlockKey.reset();
+        _acceptedBlockPending = false;
         EndOwnedBlock(a_player);
     }
 
     if (a_button.IsDown() && IsRightAttack(a_button)) {
-        acceptedBlockPending_ = false;
+        _acceptedBlockPending = false;
         EndOwnedBlock(a_player);
-        heldBlockKey_.reset();
+        _heldBlockKey.reset();
     }
 
     if (a_button.IsDown() && IsGameplayInputEnabled() && MatchesAnyBinding(a_button, Settings::Get())) {
@@ -422,12 +419,12 @@ void Combat::TryCancel(RE::ButtonEvent& a_button, RE::PlayerCharacter& a_player)
 
     const auto& settings = Settings::Get();
     const auto timingConstrained = settings.windowStart > 0.0F || settings.windowEnd > 0.0F;
-    if (timingConstrained && !timingActive_) {
+    if (timingConstrained && !_timingActive) {
         SKSE::log::debug("Cancellation denied because this attack has no observed start");
         return;
     }
-    if (timingConstrained && !InCancelWindow(attackElapsed_, settings)) {
-        SKSE::log::debug("Cancellation denied by timing at {:.3f}s", attackElapsed_);
+    if (timingConstrained && !InCancelWindow(_attackElapsed, settings)) {
+        SKSE::log::debug("Cancellation denied by timing at {:.3f}s", _attackElapsed);
         return;
     }
 
@@ -454,17 +451,16 @@ void Combat::TryCancel(RE::ButtonEvent& a_button, RE::PlayerCharacter& a_player)
         return;
     }
 
-    const auto startBlock = settings.behavior
-                            == Settings::Behavior::kCancelAndBlock
+    const auto startBlock = settings.behavior == Settings::Behavior::kCancelAndBlock
                             && SupportsVanillaBlock(rightWeapon, leftForm);
     const PhysicalKey key {a_button.GetDevice(), a_button.GetIDCode()};
     if (startBlock) {
-        heldBlockKey_ = key;
+        _heldBlockKey = key;
     }
 
     if (!a_player.NotifyAnimationGraph("attackStop")) {
         SKSE::log::debug("Cancellation request rejected by animation graph");
-        heldBlockKey_.reset();
+        _heldBlockKey.reset();
         return;
     }
     CompleteCancellation(a_player, RE::PlayerCharacter::IsGodMode() ? 0.0F : cost, startBlock);
@@ -477,8 +473,8 @@ void Combat::CompleteCancellation(RE::PlayerCharacter& a_player, const float a_s
     }
     SKSE::log::debug("Cancellation charged stamina cost {:.1f}", a_staminaCost);
 
-    if (a_startBlock && heldBlockKey_) {
-        acceptedBlockPending_ = true;
+    if (a_startBlock && _heldBlockKey) {
+        _acceptedBlockPending = true;
         if (!IsActiveMeleeAttack(a_player.AsActorState()->GetAttackState())) {
             BeginBlock(a_player);
         }
@@ -486,37 +482,37 @@ void Combat::CompleteCancellation(RE::PlayerCharacter& a_player, const float a_s
 }
 
 void Combat::BeginBlock(RE::PlayerCharacter& a_player) {
-    if (!acceptedBlockPending_ || !heldBlockKey_) {
+    if (!_acceptedBlockPending || !_heldBlockKey) {
         return;
     }
-    acceptedBlockPending_ = false;
-    const auto sameVanillaKey = vanillaBlockKey_ && heldBlockKey_ && *vanillaBlockKey_ == *heldBlockKey_;
+    _acceptedBlockPending = false;
+    const auto sameVanillaKey = _vanillaBlockKey && _heldBlockKey && *_vanillaBlockKey == *_heldBlockKey;
     if (!sameVanillaKey
-        && (a_player.IsBlocking() || a_player.AsActorState()->actorState2.wantBlocking != 0 || vanillaBlockKey_)) {
-        heldBlockKey_.reset();
+        && (a_player.IsBlocking() || a_player.AsActorState()->actorState2.wantBlocking != 0 || _vanillaBlockKey)) {
+        _heldBlockKey.reset();
         return;
     }
     a_player.AsActorState()->actorState2.wantBlocking = 1;
     if (!a_player.IsBlocking()) {
         a_player.NotifyAnimationGraph("blockStart");
     }
-    ownsBlock_ = true;
-    ownedBlockKey_ = heldBlockKey_;
+    _ownsBlock = true;
+    _ownedBlockKey = _heldBlockKey;
     SKSE::log::debug("Owned block started");
 }
 
 void Combat::EndOwnedBlock(RE::PlayerCharacter& a_player) {
-    if (!ownsBlock_) {
+    if (!_ownsBlock) {
         return;
     }
-    const auto otherVanillaKey = vanillaBlockKey_ && (!ownedBlockKey_ || *vanillaBlockKey_ != *ownedBlockKey_);
+    const auto otherVanillaKey = _vanillaBlockKey && (!_ownedBlockKey || *_vanillaBlockKey != *_ownedBlockKey);
     if (!otherVanillaKey) {
         a_player.AsActorState()->actorState2.wantBlocking = 0;
         if (a_player.IsBlocking()) {
             a_player.NotifyAnimationGraph("blockStop");
         }
     }
-    ownsBlock_ = false;
-    ownedBlockKey_.reset();
+    _ownsBlock = false;
+    _ownedBlockKey.reset();
     SKSE::log::debug("Owned block stopped");
 }

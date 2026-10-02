@@ -35,14 +35,14 @@ private:
     class PhysicalKey {
     public:
         PhysicalKey(RE::INPUT_DEVICE a_device, std::uint32_t a_id)
-            : device_(a_device)
-            , id_(a_id) {}
+            : _device(a_device)
+            , _id(a_id) {}
 
         bool operator==(const PhysicalKey&) const = default;
 
     private:
-        RE::INPUT_DEVICE device_;
-        std::uint32_t id_;
+        RE::INPUT_DEVICE _device;
+        std::uint32_t _id;
     };
 
     void HandleButton(RE::ButtonEvent& a_button, RE::PlayerCharacter& a_player);
@@ -55,14 +55,14 @@ private:
     [[nodiscard]] static bool IsActiveMeleeAttack(RE::ATTACK_STATE_ENUM a_state);
     [[nodiscard]] static bool IsCancellableAttack(RE::ATTACK_STATE_ENUM a_state);
 
-    float attackElapsed_ = 0.0F;
-    RE::ATTACK_STATE_ENUM lastAttackState_ = RE::ATTACK_STATE_ENUM::kNone;
-    std::optional<PhysicalKey> heldBlockKey_;
-    std::optional<PhysicalKey> ownedBlockKey_;
-    std::optional<PhysicalKey> vanillaBlockKey_;
-    bool acceptedBlockPending_ = false;
-    bool ownsBlock_ = false;
-    bool timingActive_ = false;
-    bool inputRegistered_ = false;
-    bool menuEventsRegistered_ = false;
+    float _attackElapsed = 0.0F;
+    RE::ATTACK_STATE_ENUM _lastAttackState = RE::ATTACK_STATE_ENUM::kNone;
+    std::optional<PhysicalKey> _heldBlockKey;
+    std::optional<PhysicalKey> _ownedBlockKey;
+    std::optional<PhysicalKey> _vanillaBlockKey;
+    bool _acceptedBlockPending = false;
+    bool _ownsBlock = false;
+    bool _timingActive = false;
+    bool _inputRegistered = false;
+    bool _menuEventsRegistered = false;
 };
