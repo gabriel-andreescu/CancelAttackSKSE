@@ -128,40 +128,30 @@ namespace {
             WriteLong(a_user, "General", "iBinding", std::to_underlying(a_values.binding));
         }
         const auto additionalBinding = std::to_underlying(a_values.additionalBinding);
-        if (additionalBinding
-            < std::to_underlying(AdditionalBinding::kDisabled)
-            || additionalBinding
-            > std::to_underlying(AdditionalBinding::kCustom)) {
+        if (additionalBinding < std::to_underlying(AdditionalBinding::kDisabled)
+            || additionalBinding > std::to_underlying(AdditionalBinding::kCustom)) {
             SKSE::log::warn("Settings: invalid General.iAdditionalBinding={}, using 0", additionalBinding);
             a_values.additionalBinding = AdditionalBinding::kDisabled;
             WriteLong(a_user, "General", "iAdditionalBinding", std::to_underlying(a_values.additionalBinding));
         }
         const auto behavior = std::to_underlying(a_values.behavior);
-        if (behavior
-            < std::to_underlying(Behavior::kCancelAndBlock)
-            || behavior
-            > std::to_underlying(Behavior::kCancelOnly)) {
+        if (behavior < std::to_underlying(Behavior::kCancelAndBlock)
+            || behavior > std::to_underlying(Behavior::kCancelOnly)) {
             SKSE::log::warn("Settings: invalid General.iBehavior={}, using 0", behavior);
             a_values.behavior = Behavior::kCancelAndBlock;
             WriteLong(a_user, "General", "iBehavior", std::to_underlying(a_values.behavior));
         }
-        const auto customKeyValid = a_values.customKey
-                                    == -1
-                                    || (a_values.customKey
-                                        >= SKSE::InputMap::kMacro_KeyboardOffset
-                                        && a_values.customKey
-                                        < SKSE::InputMap::kMaxMacros);
+        const auto customKeyValid = a_values.customKey == -1
+                                    || (a_values.customKey >= SKSE::InputMap::kMacro_KeyboardOffset
+                                        && a_values.customKey < SKSE::InputMap::kMaxMacros);
         if (!customKeyValid) {
             SKSE::log::warn("Settings: invalid General.iCustomKey={}, using -1", a_values.customKey);
             a_values.customKey = -1;
             WriteLong(a_user, "General", "iCustomKey", a_values.customKey);
         }
-        const auto additionalCustomKeyValid = a_values.additionalCustomKey
-                                              == -1
-                                              || (a_values.additionalCustomKey
-                                                  >= SKSE::InputMap::kMacro_KeyboardOffset
-                                                  && a_values.additionalCustomKey
-                                                  < SKSE::InputMap::kMaxMacros);
+        const auto additionalCustomKeyValid = a_values.additionalCustomKey == -1
+                                              || (a_values.additionalCustomKey >= SKSE::InputMap::kMacro_KeyboardOffset
+                                                  && a_values.additionalCustomKey < SKSE::InputMap::kMaxMacros);
         if (!additionalCustomKeyValid) {
             SKSE::log::warn(
                 "Settings: invalid General.iAdditionalCustomKey={}, using -1",

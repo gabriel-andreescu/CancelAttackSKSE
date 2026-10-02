@@ -4,9 +4,16 @@
     },
     bmk = {
         repo = {
-            commit = "5aed0c4df0e6b1a08a4308749138a4a981cfef07",
-            url = "https://github.com/gabriel-andreescu/BethesdaModKit.git"
+            commit = "d39bc83ee1282450a358a86fc64ad7eff5682110",
+            url = "https://github.com/gabriel-andreescu/BethesdaModKit"
         },
-        version = "0.3.1"
+        version = "0.5.0"
+    },
+    ["xmake-luals"] = {
+        repo = {
+            commit = "5a38f3c10d9674c36f981f28b2326c7de5f0717e",
+            url = "https://github.com/gabriel-andreescu/xmake-luals.git"
+        },
+        version = "0.1.1"
     }
 }
